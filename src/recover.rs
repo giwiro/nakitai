@@ -85,7 +85,7 @@ fn main() -> Result<(), anyhow::Error> {
     let og_private_key_b = include_bytes!("../private.pem");
     let og_private_key = Rsa::private_key_from_pem(&og_private_key_b.as_slice())?;
 
-    let mut encrypted_nakitai_key_encoded_buffer = Vec::new();
+    /*let mut encrypted_nakitai_key_encoded_buffer = Vec::new();
     let mut encoded_nakitai_key_file = File::open("D:\\sample\\decrypt_key.nky")?;
 
     encoded_nakitai_key_file.read_to_end(&mut encrypted_nakitai_key_encoded_buffer)?;
@@ -93,7 +93,7 @@ fn main() -> Result<(), anyhow::Error> {
     let encrypted_nakitai_key = decode(&encrypted_nakitai_key_encoded_buffer)?;
 
     let private_key = crypto::decrypt_private_key(256, &og_private_key, &encrypted_nakitai_key)?;
-
+*/
     let main_window = WindowDesc::new(build_root_ui())
         .title(WINDOW_TITLE)
         .resizable(false)

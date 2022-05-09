@@ -11,10 +11,6 @@ path = "src/ransomware.rs"
 name = "recover"
 path = "src/recover.rs"
 
-[[bin]]
-name = "image"
-path = "src/image.rs"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
