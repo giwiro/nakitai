@@ -3,13 +3,13 @@ name = "nakitai"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "ransomware"
-path = "src/ransomware.rs"
+# [[bam]]
+# name = "ransomware"
+# path = "src/ransomware.rs"
 
-[[bin]]
-name = "recover"
-path = "src/recover.rs"
+# [[bam]]
+# name = "recover"
+# path = "src/recover.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,6 +20,8 @@ chacha20poly1305 = { version = "0.9.0", features = ["stream"] }
 openssl = { version = "0.10", features = ["vendored"] }
 base64 = "0.13"
 druid = { git = "https://github.com/linebender/druid.git", features = ["image", "png"] }
+threadpool = "1.0"
+dirs = "4.0"
 
 [profile.release]
 strip = true

