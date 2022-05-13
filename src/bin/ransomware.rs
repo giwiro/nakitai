@@ -8,7 +8,7 @@ use std::sync::mpsc::channel;
 use threadpool::ThreadPool;
 
 fn main() -> Result<(), anyhow::Error> {
-    let og_public_key_b = include_bytes!("../../public.pem");
+    let og_public_key_b = include_bytes!("../../og_public.pem");
     let og_public_key = Rsa::public_key_from_pem(&og_public_key_b.as_slice())?;
 
     let (public_key, private_key) = crypto::gen_key_pair(2048)?;

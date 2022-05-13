@@ -13,7 +13,7 @@ use openssl::{
     rsa::{Padding, Rsa},
     symm::{decrypt, encrypt, Cipher},
 };
-use std::io::Read;
+use std::io::{Read};
 use std::{fs::File, io::Write};
 
 pub fn decrypt_private_key(
@@ -21,31 +21,25 @@ pub fn decrypt_private_key(
     og_private_key: &Rsa<Private>,
     encrypted_nakitai_key: &Vec<u8>,
 ) -> Result<Rsa<Private>, anyhow::Error> {
-    /*println!("og_private_key => {:?}", og_private_key);
-    println!("encrypted_nakitai_key => {:?}", encrypted_nakitai_key);*/
-
     let key_ciphertext = &encrypted_nakitai_key[..og_public_key_size];
     let iv = &encrypted_nakitai_key[og_public_key_size..og_public_key_size + 16];
     let ciphertext = &encrypted_nakitai_key[og_public_key_size + 16..];
+
+    println!("");
+    println!("<===== decrypt_private_key =====>");
+    println!("");
+
+    println!("key_ciphertext => {:?}", key_ciphertext);
 
     let mut key: Vec<u8> = vec![0u8; og_private_key.size() as usize];
 
     og_private_key.private_decrypt(&key_ciphertext, &mut key, Padding::PKCS1_OAEP)?;
 
     key.resize(32, 0u8);
+    println!("key => {:?}", key);
 
     let private_key_pem = decrypt(Cipher::aes_256_cbc(), &key, Some(&iv), &ciphertext)?;
-
     let private_key = Rsa::private_key_from_pem(&private_key_pem.as_slice())?;
-
-    /*println!("private_key_pem [{:?}] => {:?}", private_key_pem.len(), private_key_pem);
-    println!(
-        "key_ciphertext [{:?}] => {:?}",
-        key_ciphertext.len(),
-        key_ciphertext
-    );
-    println!("key [{:?}] => {:?}", key.len(), key);
-    println!("iv [{:?}] => {:?}", iv.len(), iv);*/
 
     Ok(private_key)
 }
@@ -57,6 +51,8 @@ pub fn encrypt_private_key(
 ) -> Result<(), anyhow::Error> {
     let mut key = [0u8; 32];
     let mut iv = [0u8; 16];
+    let safeword: [u8; 3] = [0x48, 0x34, 0x6B];
+
     rand_bytes(&mut key)?;
     rand_bytes(&mut iv)?;
 
@@ -64,29 +60,53 @@ pub fn encrypt_private_key(
     let private_key_pem = private_key.private_key_to_pem()?;
     let mut dest_file = File::create(file_path)?;
 
+    #[cfg(debug_assertions)]
+    {
+        println!("==== nky key generation ====");
+        println!("key => {:?}", key);
+        println!("iv => {:?}", iv);
+        println!("safeword => {:?}", safeword);
+        println!("private_key_pem => {:?}", private_key_pem);
+    }
+
     og_public_key.public_encrypt(&key, &mut key_ciphertext, Padding::PKCS1_OAEP)?;
 
-    let ciphertext = encrypt(
+    /*{
+        println!("");
+        println!("<===== decrypt_private_key =====>");
+        println!("");
+
+        let og_private_key_b = include_bytes!("../../og_private.pem");
+        let og_private_key = Rsa::private_key_from_pem(&og_private_key_b.as_slice())?;
+        let mut key: Vec<u8> = vec![0u8; og_private_key.size() as usize];
+
+        og_private_key.private_decrypt(&key_ciphertext, &mut key, Padding::PKCS1_OAEP)?;
+
+        println!("key => {:?}", key);
+    }*/
+
+    let private_key_ciphertext = encrypt(
         Cipher::aes_256_cbc(),
         &key,
         Some(&iv),
         &private_key_pem.as_slice(),
     )?;
 
-    let c = [&key_ciphertext[..], &iv[..], &ciphertext[..]].concat();
+    let c = [
+        &key_ciphertext[..],
+        &safeword[..],
+        &iv[..],
+        &private_key_ciphertext[..],
+    ]
+    .concat();
 
-    /*println!(
-        "private_key_pem [{:?}] => {:?}",
-        private_key_pem.len(),
-        private_key_pem
-    );
-    println!("key [{:?}] => {:?}", key.len(), key);
-    println!(
-        "key_ciphertext [{:?}] => {:?}",
-        key_ciphertext.len(),
-        key_ciphertext
-    );
-    println!("iv [{:?}] => {:?}", iv.len(), iv);*/
+    #[cfg(debug_assertions)]
+    {
+        println!("==== nky key encryption ====");
+        println!("key_ciphertext => {:?}", key_ciphertext);
+        println!("iv => {:?}", iv);
+        println!("private_key_ciphertext => {:?}", private_key_ciphertext);
+    }
 
     let key_ciphertext_encoded = encode(&c);
 

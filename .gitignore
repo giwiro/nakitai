@@ -1,7 +1,7 @@
 /target
 
-public.pem
-private.pem
+og_public.pem
+og_private.pem
 
 .idea/
 
