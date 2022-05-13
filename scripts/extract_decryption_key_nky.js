@@ -87,7 +87,7 @@ async function run() {
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     const privateKey = decipher.update(privateKeyCiphertext, null, 'utf8');
 
-    console.log((new Buffer(privateKey)).toString('base64'));
+    return Promise.resolve(privateKey);
   } catch (e) {
     console.error(e);
     process.exit(1);
@@ -96,4 +96,4 @@ async function run() {
 
 }
 
-run();
+run().then(console.log);

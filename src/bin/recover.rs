@@ -36,7 +36,7 @@ fn build_root_ui() -> impl Widget<AppState> {
     let label_wrap = Flex::row()
         .cross_axis_alignment(druid::widget::CrossAxisAlignment::Start)
         .with_child(
-            Label::new("Paste your private key in base64 format")
+            Label::new("Paste your private key")
                 .with_line_break_mode(druid::widget::LineBreaking::WordWrap),
         );
 
