@@ -1,7 +1,5 @@
-use nakitai::utils::crypto;
 use nakitai::{
-    count_common_files, find_common_files, get_decrypt_key_nky_path,
-    ROOT_DIRS,
+    count_common_files, find_common_files, get_decrypt_key_nky_path, utils::crypto, ROOT_DIRS,
 };
 use openssl::rsa::Rsa;
 use std::sync::mpsc::channel;
@@ -52,7 +50,7 @@ fn main() -> Result<(), anyhow::Error> {
                     }
                 }
                 match tx.send(1) {
-                    Ok(_) => {},
+                    Ok(_) => {}
                     _ => {
                         #[cfg(debug_assertions)]
                         {

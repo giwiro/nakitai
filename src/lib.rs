@@ -43,4 +43,4 @@ pub static ROOT_DIRS: [&str; 1] = ["/"];
     "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:", "O:", "P:", "Q:", "R:",
     "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:",
 ];*/
-pub static ROOT_DIRS: [&str; 1] = ["D:\\sample\\"];
+pub static ROOT_DIRS: [&str; 1] = ["D:\\sample"];

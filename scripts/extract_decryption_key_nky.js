@@ -85,7 +85,10 @@ async function run() {
 
     const key = crypto.privateDecrypt(ogPrivateKey, keyCiphertext);
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    const privateKey = decipher.update(privateKeyCiphertext, null, 'utf8');
+    decipher.setAutoPadding(true);
+
+    let privateKey = decipher.update(privateKeyCiphertext, null, 'utf8');
+    privateKey += decipher.final();
 
     return Promise.resolve(privateKey);
   } catch (e) {

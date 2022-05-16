@@ -1603,13 +1603,7 @@ pub fn get_encrypted_files_iterator(dir_path: &str) -> impl Iterator<Item = DirE
         let file_name = entry.file_name().to_str().unwrap_or("");
 
         match entry.metadata() {
-            Ok(metadata) => {
-                let c = metadata.is_file() && file_name.to_lowercase().ends_with(".nakitai");
-                if c {
-                    println!("=> {:?}", file_name);
-                }
-                c
-            }
+            Ok(metadata) => metadata.is_file() && file_name.to_lowercase().ends_with(".nakitai"),
             _ => false,
         }
     })

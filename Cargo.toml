@@ -3,15 +3,9 @@ name = "nakitai"
 version = "0.1.0"
 edition = "2021"
 
-# [[bam]]
-# name = "ransomware"
-# path = "src/ransomware.rs"
-
-# [[bam]]
-# name = "recover"
-# path = "src/recover.rs"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+# IMPORTANT: This will delete the original files!! not recommended for development
+harmful = []
 
 [dependencies]
 anyhow = "1.0"

