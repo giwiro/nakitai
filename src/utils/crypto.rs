@@ -7,6 +7,7 @@ use chacha20poly1305::{
     },
     XChaCha20Poly1305,
 };
+#[allow(unused_imports)]
 use openssl::{
     pkey::{Private, Public},
     rand::rand_bytes,

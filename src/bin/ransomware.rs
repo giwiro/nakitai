@@ -62,11 +62,11 @@ fn main() -> Result<(), anyhow::Error> {
         });
     }
 
-    let finished_jobs = rx.iter().take(files_count).count();
+    let _finished_jobs = rx.iter().take(files_count).count();
 
     #[cfg(debug_assertions)]
     {
-        println!("Encrypted files count {:?}", finished_jobs);
+        println!("Encrypted files count {:?}", _finished_jobs);
     }
 
     Ok(())

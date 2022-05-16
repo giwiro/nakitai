@@ -57,10 +57,10 @@ fn run_decryption(private_key_str: &String) -> Result<(), anyhow::Error> {
                 let file_path = entry.path().display().to_string();
                 match crypto::decrypt_file(&file_path, 256, &private_key) {
                     Ok(_) => {}
-                    Err(err) => {
+                    Err(_err) => {
                         #[cfg(debug_assertions)]
                         {
-                            println!("Failed file encryption => {:?}\n{:?}", file_path, err);
+                            println!("Failed file encryption => {:?}\n{:?}", file_path, _err);
                         }
                     }
                 }
@@ -77,11 +77,11 @@ fn run_decryption(private_key_str: &String) -> Result<(), anyhow::Error> {
         });
     }
 
-    let finished_jobs = rx.iter().take(files_count).count();
+    let _finished_jobs = rx.iter().take(files_count).count();
 
     #[cfg(debug_assertions)]
     {
-        println!("Decrypted files count {:?}", finished_jobs);
+        println!("Decrypted files count {:?}", _finished_jobs);
     }
 
     Ok(())
