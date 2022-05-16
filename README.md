@@ -5,6 +5,9 @@
 | | | | (_| |   <| | || (_| | |
 |_| |_|\__,_|_|\_\_|\__\__,_|_|                                                         
 ```
+[![made-with-Rust](https://img.shields.io/badge/Made%20with-Rust-orange.svg)](http://commonmark.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 
 ## Description
 
@@ -21,3 +24,17 @@ This project compiles 2 binaries:
 
 2. `rescue`: GUI Program that will decrypt all the encrypted files.
 
+![recover](assets/recover.png?raw=true)
+
+## Compile
+
+
+
+## Process
+
+## Legal Disclaimer
+
+```
+The author does not hold any responsibility for the bad use of this tool,
+remember that attacking targets without prior consent is illegal and punished by law.
+```
