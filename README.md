@@ -14,8 +14,8 @@ $$ |  $$ |\$$$$$$$ |$$ | \$$\ $$ |  \$$$$  |\$$$$$$$ |$$ |       (,_....----''' 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Rust multithread ransomware that stream encrypts each file with chacha20poly1305 which, besides
-from stream (online) encrypting the files by chunks, it's also nonce-reuse
-misuse-resistant (as stated in this [paper](https://eprint.iacr.org/2015/189.pdf)) and verify the chunk integrity 
+from stream (online) encrypting the files by chunks, it's also nonce-reuse misuse-resistant 
+(as stated in this [paper](https://eprint.iacr.org/2015/189.pdf)) and will verify the chunk integrity 
 (authentication) with poly1350.
 
 ## What's inside ?
@@ -40,17 +40,17 @@ This project compiles 2 binaries:
     ├── /assets                             # Assets used in README.md
     ├── /scripts                            # Helpful scripts in python3
     │   ├── generate_rsa_keys.js            # Generates RSA 2048 keypair: og_public.pem (this will be embedded) ad og_private.pem
-    │   └── extract_decrypt_key_nky.js   # Decrypts the nky key and outputs the private key.
+    │   └── extract_decrypt_key_nky.js      # Decrypts the nky key and outputs the private key.
     └── /src                                # Source code of main project
         ├── /assets                         # Assets used in the binaries (images)
-        ├── /utils                          # 
-        │   ├── crypto.rs                   # 
-        │   ├── traverse.rs                 # 
-        │   └── mod.rs                      # 
-        ├── lib.rs                          # 
-        └── /bin                            # 
-            ├── ransomware.rs               # 
-            └── recover.rs                  #
+        ├── /utils                          # Folder containing common funtionality
+        │   ├── crypto.rs                   # Common crypto operations such as encrypt and decrypt
+        │   ├── traverse.rs                 # Common directory and files operation, such as generating iterators to find files
+        │   └── mod.rs                      # Export functionality
+        ├── lib.rs                          # Library file that will wrap up all utils functionality
+        └── /bin                            # Folder containing all binaries
+            ├── ransomware.rs               # Binary that will perform the decrypt_key.nky creation and files encryption
+            └── recover.rs                  # GUI binary that will help decrypt all the files if the correct private.pem key is provided
 
 ## Process (encryption model)
   1. RSA og keypair generated (by js script).
@@ -62,7 +62,7 @@ This project compiles 2 binaries:
 
 ![recover](assets/compile.png?raw=true)
 
-  3. Once the ransomware gets executed, it will perform then `decrypt_key.nky` in 4 steps:
+  3. Once the ransomware gets executed, it will create the `decrypt_key.nky` in 4 steps:
 
      1. Generate another RSA 2048 keypair: `private.pem` and `public.pem`.
      2. Symmetric encrypt the `private.pem`. For that a `key` and a `iv` will be generated 
@@ -127,11 +127,6 @@ or
   ```
 
 ## FAQ
-
-* **What are `iv` and `nonce` and what are its differences ?**
-
-  
-
 
 * **Which AES block cipher mode should I use ?**
 
