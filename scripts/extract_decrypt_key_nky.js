@@ -6,7 +6,7 @@ const fsPromises = require('fs').promises;
 
 function printUsage() {
   console.log(`
-  extract_decryption_key_nky.js <path_to_nky_file> <path_to_og_private_key>
+  extract_decrypt_key_nky.js <path_to_nky_file> <path_to_og_private_key>
   
     path_to_nky_file:           Path to the decryption key nky.
     path_to_og_keys_dir:        Path to the original keys: og_private.pem and pg_public.pem.

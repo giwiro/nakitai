@@ -21,7 +21,7 @@ use std::{
     path::Path,
 };
 
-// This is gonna be done with the `extract_decryption_key_nky.js`
+// This is gonna be done with the `extract_decrypt_key_nky.js`
 #[cfg(debug_assertions)]
 pub fn decrypt_private_key(
     og_public_key_size: usize,
