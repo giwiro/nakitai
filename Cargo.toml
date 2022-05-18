@@ -16,6 +16,7 @@ base64 = "0.13"
 druid = { git = "https://github.com/linebender/druid.git", features = ["image", "png"] }
 threadpool = "1.0"
 dirs = "4.0"
+wallpaper = "3.0"
 
 [profile.release]
 strip = true
